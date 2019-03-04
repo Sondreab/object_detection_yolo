@@ -5,6 +5,8 @@ import copy
 from task2_tools import read_predicted_boxes, read_ground_truth_boxes
 
 def calculate_iou(prediction_box, gt_box):
+    #TASK 2a
+    xmin, ymin, xmax, ymax = 0,1,2,3
     """Calculate intersection over union of single predicted and ground truth box.
 
     Args:
@@ -16,10 +18,27 @@ def calculate_iou(prediction_box, gt_box):
         returns:
             float: value of the intersection of union for the two boxes.
     """
-    # YOUR CODE HERE
-    raise NotImplementedError
+    
+    dx = min(prediction_box[xmax], gt_box[xmax]) - max(prediction_box[xmin], gt_box[xmin])
+    dy = min(prediction_box[ymax], gt_box[ymax]) - max(prediction_box[ymin], gt_box[ymin])
+
+    if (dx>0) and (dy>0): 
+        intersection = dx*dy
+    else: 
+        intersection = 0
+    
+    area_prediction_box = (prediction_box[xmax]-prediction_box[xmin])*(prediction_box[ymax]-prediction_box[ymin])
+    area_gt_box = (gt_box[xmax]-gt_box[xmin])*(gt_box[ymax]-gt_box[ymin])
+
+    union = area_prediction_box + area_gt_box - intersection
+
+    iou = intersection/union
+
+    return iou
 
 def calculate_precision(num_tp, num_fp, num_fn):
+    #TASK 2b
+    #UNUSED ARGUMENT: num_fn
     """ Calculates the precision for the given parameters.
         Returns 1 if num_tp + num_fp = 0
 
@@ -30,10 +49,12 @@ def calculate_precision(num_tp, num_fp, num_fn):
     Returns:
         float: value of precision
     """
-    raise NotImplementedError
+    return num_tp / (num_tp + num_fp)
 
 
 def calculate_recall(num_tp, num_fp, num_fn):
+    #TASK 2b
+    #UNUSED ARGUMENT: num_fp
     """ Calculates the recall for the given parameters.
         Returns 0 if num_tp + num_fn = 0
     Args:
@@ -43,7 +64,7 @@ def calculate_recall(num_tp, num_fp, num_fn):
     Returns:
         float: value of recall
     """
-    raise NotImplementedError
+    return num_tp / (num_tp + num_fn)
 
 
 def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
