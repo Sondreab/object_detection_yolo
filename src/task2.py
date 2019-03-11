@@ -87,12 +87,49 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
             objects with shape: [number of box matches, 4].
             Each row includes [xmin, ymin, xmax, ymax]
     """
+    num_prediction_boxes = prediction_boxes.shape[0]
+    #print("num pb: {}".format(num_prediction_boxes))
+    num_gt_boxes = gt_boxes.shape[0]
+    #print("num gt: {}".format(num_gt_boxes))
     # Find all possible matches with a IoU >= iou threshold
 
+    all_box_matches = []
+    for pb_idx in range(num_prediction_boxes):
+        for gt_idx in range(num_gt_boxes):
+            iou = calculate_iou(prediction_boxes[pb_idx], gt_boxes[gt_idx])
+            if iou >= iou_threshold:
+                all_box_matches.append(tuple((pb_idx, gt_idx, iou)))
+
     # Sort all matches on IoU in descending order
+    print("All boxes: {}".format(all_box_matches))
+    dtype = [('prediction box index', int), ('ground truth index', int), ('iou', float)]
+    all_box_matches = np.array(all_box_matches, dtype=dtype)
+    """
+    print("All boxes numpy: {}".format(all_box_matches))
+    print("All boxes numpy index 2: {}".format(all_box_matches[2]))
+    print("All boxes numpy index 2[2]: {}".format(all_box_matches[2][2]))
+    """
+    print("All boxes numpy shape: {}".format(all_box_matches.shape))
+    all_box_matches = np.sort(all_box_matches, order='iou')
+    all_box_matches = np.flip(all_box_matches, axis=0)
+    print("Sorted: {}".format(all_box_matches))
+    num_matches = all_box_matches.shape[0]
 
     # Find all matches with the highest IoU threshold
-    raise NotImplementedError
+    best_box_matches = [all_box_matches[0]]
+    print("appending: {}".format(best_box_matches[0]))
+    for match_idx in range(1, num_matches):
+        for best_idx in range(len(best_box_matches)): 
+            print("(pb box, gt box) = ({}, {})".format(match_idx, best_idx))
+            if (all_box_matches[match_idx][0] == best_box_matches[best_idx][0]) or (all_box_matches[match_idx][1] == best_box_matches[best_idx][1]):
+                print("Better match already found")
+                break
+        best_box_matches.append(all_box_matches[match_idx])
+    
+    print("Best matches: {}".format(best_box_matches))
+        
+
+
 
 
 def calculate_individual_image_result(
