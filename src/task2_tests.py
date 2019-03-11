@@ -15,7 +15,7 @@ def test_iou():
     b2 = np.array([1, 2, 3, 4])
 
     res = calculate_iou(b1, b2)
-    ans = 1/7
+    ans = 1/7.0
     assert res == ans, "Expected {}, got: {}".format(ans, res)
 
     b1 = np.array([0, 0, 1, 1])
@@ -52,12 +52,12 @@ def test_iou():
 def test_precision():
     print("="*80)
     print("Running tests for calculate_precision")
-    ans = 1
+    ans = 1.0
     res = calculate_precision(0, 0, 0)
     assert res == ans, "Expected {}, got: {}".format(ans, res)
 
     res = calculate_precision(10, 20, 0)
-    ans = 1/3
+    ans = 1/3.0
     assert res == ans, "Expected {}, got: {}".format(ans, res)
 
 
@@ -69,7 +69,7 @@ def test_recall():
     assert res == ans, "Expected {}, got: {}".format(ans, res)
 
     res = calculate_recall(10, 0, 30)
-    ans = 1/4
+    ans = 1/4.0
     assert res == ans, "Expected {}, got: {}".format(ans, res)
 
 
@@ -109,7 +109,6 @@ def test_get_all_box_matches():
     assert res1.size == 0
     assert res2.size == 0
 
-    print("Test passed")
 
 
 def test_calculate_individual_image_result():
@@ -159,8 +158,8 @@ def test_calculate_precision_recall_all_images():
     ])
     np.random.shuffle(b1)
     np.random.shuffle(b2)
-    ans1 = 6/8
-    ans2 = 6/8
+    ans1 = 6/8.0
+    ans2 = 6/8.0
     res1, res2 = calculate_precision_recall_all_images([b1, b2], [b2, b2], 0.5)
     assert res1 == ans1, "Expected {}, got: {}".format(ans1, res1)
     assert res2 == ans2, "Expected {}, got: {}".format(ans2, res2)
