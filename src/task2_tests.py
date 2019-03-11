@@ -109,6 +109,8 @@ def test_get_all_box_matches():
     assert res1.size == 0
     assert res2.size == 0
 
+    print("Test passed")
+
 
 def test_calculate_individual_image_result():
     print("="*80)

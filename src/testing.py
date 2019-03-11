@@ -1,4 +1,5 @@
 from task2 import *
+from task2_tests import *
 import numpy as np
 
 
@@ -15,3 +16,6 @@ b2 = np.array([
 get_all_box_matches(b1, b2, 0)
 
 print("----------------------\n")
+
+test_get_all_box_matches()
+

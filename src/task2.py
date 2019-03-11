@@ -88,45 +88,66 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
             Each row includes [xmin, ymin, xmax, ymax]
     """
     num_prediction_boxes = prediction_boxes.shape[0]
-    #print("num pb: {}".format(num_prediction_boxes))
     num_gt_boxes = gt_boxes.shape[0]
-    #print("num gt: {}".format(num_gt_boxes))
-    # Find all possible matches with a IoU >= iou threshold
-
+    
+    ########### Find all possible matches with a IoU >= iou threshold
     all_box_matches = []
     for pb_idx in range(num_prediction_boxes):
         for gt_idx in range(num_gt_boxes):
             iou = calculate_iou(prediction_boxes[pb_idx], gt_boxes[gt_idx])
             if iou >= iou_threshold:
                 all_box_matches.append(tuple((pb_idx, gt_idx, iou)))
+    
+    if not all_box_matches:
+        return np.array([]), np.array([])
 
-    # Sort all matches on IoU in descending order
-    print("All boxes: {}".format(all_box_matches))
+    ########### Sort all matches on IoU in descending order
+    #print("All boxes: {}".format(all_box_matches))
     dtype = [('prediction box index', int), ('ground truth index', int), ('iou', float)]
     all_box_matches = np.array(all_box_matches, dtype=dtype)
-    """
-    print("All boxes numpy: {}".format(all_box_matches))
-    print("All boxes numpy index 2: {}".format(all_box_matches[2]))
-    print("All boxes numpy index 2[2]: {}".format(all_box_matches[2][2]))
-    """
-    print("All boxes numpy shape: {}".format(all_box_matches.shape))
     all_box_matches = np.sort(all_box_matches, order='iou')
     all_box_matches = np.flip(all_box_matches, axis=0)
-    print("Sorted: {}".format(all_box_matches))
     num_matches = all_box_matches.shape[0]
 
-    # Find all matches with the highest IoU threshold
+    ########### Find all matches with the highest IoU threshold
     best_box_matches = [all_box_matches[0]]
-    print("appending: {}".format(best_box_matches[0]))
+    #print("appending: {}".format(best_box_matches[0]))
     for match_idx in range(1, num_matches):
-        for best_idx in range(len(best_box_matches)): 
-            print("(pb box, gt box) = ({}, {})".format(match_idx, best_idx))
+        exists_better_match = False
+        #print("### Match index: {}".format(match_idx))
+        #print("length of best matches: {}\n".format(len(best_box_matches)))
+
+        for best_idx in range(len(best_box_matches)):
+            #print("# best index: {}".format(best_idx))
+            #print("({}, {}) vs. ({}, {})".format(all_box_matches[match_idx][0], all_box_matches[match_idx][1], best_box_matches[best_idx][0], best_box_matches[best_idx][1]))
             if (all_box_matches[match_idx][0] == best_box_matches[best_idx][0]) or (all_box_matches[match_idx][1] == best_box_matches[best_idx][1]):
-                print("Better match already found")
+                #print("Better match already found\n")
+                exists_better_match = True
                 break
-        best_box_matches.append(all_box_matches[match_idx])
+
+        if not exists_better_match:
+            #print("appending: {}\n".format(all_box_matches[match_idx]))
+            best_box_matches.append(all_box_matches[match_idx])
     
-    print("Best matches: {}".format(best_box_matches))
+    #print("Best matches: {}".format(best_box_matches))
+
+    num_matches = len(best_box_matches)
+
+    prediction_matches = np.zeros([num_matches,4])
+    gt_matches = np.zeros([num_matches,4])
+    
+
+    for match in range(num_matches):
+        pb_idx = best_box_matches[match][0]
+        gt_idx = best_box_matches[match][1]
+
+        prediction_matches[match] = prediction_boxes[pb_idx]
+        gt_matches[match] = gt_boxes[gt_idx]
+
+    print("Returned matches: \n{}\n{}".format(prediction_matches, gt_matches))
+
+    return prediction_matches, gt_matches
+
         
 
 
