@@ -109,7 +109,7 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
         return np.array([]), np.array([])
 
     ########### Sort all matches on IoU in descending order
-    #print("All boxes: {}".format(all_box_matches))
+     
     dtype = [('prediction box index', int), ('ground truth index', int), ('iou', float)]
     all_box_matches = np.array(all_box_matches, dtype=dtype)
     all_box_matches = np.sort(all_box_matches, order='iou')
@@ -118,31 +118,21 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
 
     ########### Find all matches with the highest IoU threshold
     best_box_matches = [all_box_matches[0]]
-    #print("appending: {}".format(best_box_matches[0]))
     for match_idx in range(1, num_matches):
         exists_better_match = False
-        #print("### Match index: {}".format(match_idx))
-        #print("length of best matches: {}\n".format(len(best_box_matches)))
-
+        
         for best_idx in range(len(best_box_matches)):
-            #print("# best index: {}".format(best_idx))
-            #print("({}, {}) vs. ({}, {})".format(all_box_matches[match_idx][0], all_box_matches[match_idx][1], best_box_matches[best_idx][0], best_box_matches[best_idx][1]))
             if (all_box_matches[match_idx][0] == best_box_matches[best_idx][0]) or (all_box_matches[match_idx][1] == best_box_matches[best_idx][1]):
-                #print("Better match already found\n")
                 exists_better_match = True
                 break
 
         if not exists_better_match:
-            #print("appending: {}\n".format(all_box_matches[match_idx]))
             best_box_matches.append(all_box_matches[match_idx])
     
-    #print("Best matches: {}".format(best_box_matches))
-
     num_matches = len(best_box_matches)
 
     prediction_matches = np.zeros([num_matches,4])
     gt_matches = np.zeros([num_matches,4])
-    
 
     for match in range(num_matches):
         pb_idx = best_box_matches[match][0]
@@ -150,8 +140,6 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
 
         prediction_matches[match] = prediction_boxes[pb_idx]
         gt_matches[match] = gt_boxes[gt_idx]
-
-    #print("Returned matches: \n{}\n{}".format(prediction_matches, gt_matches))
 
     return prediction_matches, gt_matches
 
@@ -231,9 +219,6 @@ def calculate_precision_recall_all_images(
     precision = calculate_precision(tot_true_positives, tot_false_positives, tot_false_negatives)
     recall = calculate_recall(tot_true_positives, tot_false_positives, tot_false_negatives)
     
-    #print("tp, fp, fn = {}, {}, {}".format(tot_true_positives, tot_false_positives, tot_false_negatives))
-    #print("Precision, recall = {}, {}".format(precision, recall))
-
     return precision, recall
 
 
@@ -273,14 +258,19 @@ def get_precision_recall_curve(all_prediction_boxes, all_gt_boxes,
     precisions = np.zeros([num_thresholds,])
     recalls = np.zeros([num_thresholds,])
 
+    
     for t in range(num_thresholds):
         all_predictions_over_threshold = []
+
         for image in range(len(confidence_scores)):
             image_boxes = confidence_scores[image]
             image_predictions_over_threshold = []
+
             for box in range(image_boxes.shape[0]):
+
                 if confidence_scores[image][box] >= confidence_thresholds[t]:
                     image_predictions_over_threshold.append(all_prediction_boxes[image][box])
+
             image_predictions_over_threshold = np.array(image_predictions_over_threshold)
             all_predictions_over_threshold.append(image_predictions_over_threshold)
 
@@ -332,39 +322,17 @@ def calculate_mean_average_precision(precisions, recalls):
 
     N = recalls.shape[0]
     
-    """
-    ### FEIL
-    num_recalls_per_level = np.zeros([num_recall_levels,])
-    max_precision_per_level = np.zeros([num_recall_levels,])
-
-    for level in range(num_recall_levels-1):
-        print("\n\n## Level: {} --------------------".format(recall_levels[level]))
-        for n in range(N):
-            print("\n# n = {}".format(n))
-            print("{} <= {} < {}?".format(recall_levels[level], recalls[n], recall_levels[level + 1]))
-            if (recalls[n] >= recall_levels[level]) and (recalls[n] < recall_levels[level + 1]):
-                print("yes")
-                num_recalls_per_level[level] += 1
-                if precisions[n] > max_precision_per_level[level]:
-                    max_precision_per_level[level] = precisions[n]
-
-    print("num recalls: {}".format(num_recalls_per_level))
-    print("max: {}".format(max_precision_per_level))
-
-    AP = (max_precision_per_level.dot(num_recalls_per_level))/(float(num_recall_levels))
-    """
-
-    AP = 0
+    sum_max_precisions = 0
     for level in range(num_recall_levels):
         max_precision = 0
         for n in range(N):
             if (recalls[n] >= recall_levels[level]) and (precisions[n]>max_precision):
                 max_precision = precisions[n]
-        AP += max_precision
+        sum_max_precisions += max_precision
         
-    AP = AP / (float(num_recall_levels))
+    average_precisions = sum_max_precisions / (float(num_recall_levels))
 
-    return AP
+    return average_precisions
 
 
 
